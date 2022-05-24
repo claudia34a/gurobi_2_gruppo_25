@@ -7,51 +7,62 @@ import java.io.IOException;
 public class Main {
 
     //creazione variabili xij del modello
-    private static GRBVar[][] aggiungiVariabili(GRBModel model, int verticeV, int arcoA) throws GRBException {
-        GRBVar[][] xij = new GRBVar[verticeV][arcoA];
+    private static GRBVar[][] aggiungiVariabili(GRBModel model, int nVertici) throws GRBException {
+        GRBVar[][] xij = new GRBVar[nVertici][nVertici];
 
         for (int i = 0; i < vertiveV; i++) {
 
-            for (int j = 0; j < arcoA; j++) {
-                xij[i][j] = model.addVar(0, GRB.INFINITY, 0, GRB.CONTINUOUS, "x" + i + j);
+            for (int j = 0; j < nVertici; j++) {
+                xij[i][j] = model.addVar(0, 1, 0, GRB.INTEGER, "x" + i + j);
             }
         }
         return xij;
     }
 
-    //creazione variabile per funzione obiettivo linearizzata (modulo linearizzato)
-    private static GRBVar aggiungiVariabileFunzioneObiettivo(GRBModel model) throws GRBException {
-        GRBVar W;
-        W = model.addVar(-GRB.INFINITY, GRB.INFINITY, 0, GRB.CONTINUOUS, "W");
-        return W;
-    }
-
-    //aggiunta funzione obiettivo al modello (modulo linearizzato)
-    private static void aggiungiFunzioneObiettivo(GRBModel model, GRBVar w) throws GRBException {
+    //aggiunta funzione obiettivo al modello
+    private static void aggiungiFunzioneObiettivo(GRBModel model, int [][] cij, GRBVar [][] xij, int nVertici) throws GRBException {
         GRBLinExpr funzione_obiettivo = new GRBLinExpr();
-        // W = |a-b|
-        //**** AGGIUNTA FUNZIONE OBIETTIVO ****
-        funzione_obiettivo.addTerm(1.0, w);
+
+        for (int i = 0; i < nVertici; i++){
+            for (int j = 0; j < nVertici; j++){
+                if(i!=j)
+                    funzione_obiettivo.addTerm(cij[i][j], xij[i][j]);
+            }
+        }
         model.setObjective(funzione_obiettivo);
         model.set(GRB.IntAttr.ModelSense, GRB.MINIMIZE);
     }
 
-    private static void aggiungiVincoliFunzioneObiettivoAus(GRBModel model, GRBVar w, GRBVar[][] xij, int[][] P, GRBVar[] yh, GRBVar[] aus) throws GRBException {
 
-        for (int i = 0; i < P.length; i++) {
-            for (int j = 0; j < P[0].length / 2; j++) {
-                obj.addTerm(P[i][j], xij[i][j]);
-                obj1.addTerm((-1) * P[i][j], xij[i][j]);
-            }
 
-            for (int j = (P[0].length / 2) + 1; j < P[0].length; j++) {
-                obj.addTerm((-1) * ([i][j]), xij[i][j]);
-                obj1.addTerm((P[i][j]), xij[i][j]);
+    private static void aggiungiVincolo1(GRBModel model, GRBVar[][] xij,int nVertici) throws GRBException {
+
+        for (int i = 0; i < nVertici; i++){
+            for (int j = 0; j < nVertici; j++){
+                if(i!=j) {
+                    GRBLinExpr expr = new GRBLinExpr();
+                    expr.addTerm(1, xij[i][j]);
+                    model.addConstr(expr, GRB.EQUAL, 1, "vincolo " + i + j);
+                }
             }
         }
     }
 
-        public static void main (String[]args){
+    private static void aggiungiVincolo2(GRBModel model, GRBVar[][] xij,int nVertici) throws GRBException {
+
+        for (int j = 0; j < nVertici; j++){
+            for (int i = 0; i < nVertici; i++){
+                if(i!=j) {
+                    GRBLinExpr expr = new GRBLinExpr();
+                    expr.addTerm(1, xij[i][j]);
+                    model.addConstr(expr, GRB.EQUAL, 1, "vincolo " + i + j);
+                }
+            }
+        }
+    }
+
+
+    public static void main (String[]args){
 
             int[][] xij; //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
             int[][] cij;//il percorso è simmetrico -> cij=cji
@@ -72,10 +83,9 @@ public class Main {
 
             String nome_file = "coppia25.txt";
 
-            try {
-                // apre il file in lettura
-                BufferedReader filebuf =
-                        new BufferedReader(new FileReader(nome_file));
+             try {
+                // apre in lettura
+                BufferedReader filebuf = new BufferedReader(new FileReader(nome_file));
                 boolean iniziaLettura = false;
                 String next;
                 next = filebuf.readLine();
@@ -83,14 +93,16 @@ public class Main {
                 while (next != null) {
                     String[] riga;
                     if (iniziaLettura) { // se non e' finito il file
-                        riga = (next.split(" "));
-cij[]
-                    }else if (next.contains("Vertici")) {
+                        riga = next.split(" ");
+                        cij[Integer.parseInt(riga[0])][Integer.parseInt(riga[1])] = Integer.parseInt(riga[2]);
+                        cij[Integer.parseInt(riga[1])][Integer.parseInt(riga[0])] = Integer.parseInt(riga[2]);
+                    } else if (next.contains("Vertici")) {
+                        //riga = (next.split(" "));
+                        //cij=new int[riga[1]][riga[1]];
                         iniziaLettura = true;
                     }
                     next = filebuf.readLine();
                 }
-                ;
 
                 filebuf.close(); // chiude il file
 
