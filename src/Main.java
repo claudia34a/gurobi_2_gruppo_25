@@ -181,7 +181,7 @@ public class Main {
 //------------------------------- QUESITO 1 ---------------------------------------------------------------------------
             System.out.println("QUESITO I:");
             System.out.println("funzione obiettivo = " + model.get(GRB.DoubleAttr.ObjVal));
-
+            System.out.print( "ciclo ottimo = [");
 
 
 
@@ -192,4 +192,5 @@ public class Main {
 
 
 
-    }}
+    }
+}
