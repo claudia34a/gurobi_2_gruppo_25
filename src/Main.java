@@ -93,23 +93,10 @@ public class Main {
             }
         }
     }
-    private static void aggiungiVincolo4(GRBModel model, int nVertici, GRBVar [] u) throws GRBException {
-        int cost = (nVertici - 2);
-        GRBLinExpr expr5 = new GRBLinExpr();
-        expr5.addConstant(cost);
-        for (int i = 1; i <= nVertici-1; i++){
-
-            GRBLinExpr expr = new GRBLinExpr();
-            expr.addTerm(1, u[i-1]);
-            model.addConstr(expr, GRB.LESS_EQUAL, expr5, "vincolo di minore di n-1 " + i);
-            model.addConstr(expr,GRB.GREATER_EQUAL,0, "vincolo maggiore di 1" + i);
-        }
-    }
-
 
     public static void main (String[]args){
         int n_vertici = 40;
-        int[][] cij = new int[n_vertici][n_vertici];;//il percorso è simmetrico -> cij=cji
+        int[][] cij = new int[n_vertici][n_vertici];//il percorso è simmetrico -> cij=cji
 
         int verticeV = 2;
         int a=7; //vincolo1: il costo dei lati incidenti al vertice v sia al massimo il a% del costo totale del ciclo
@@ -162,10 +149,8 @@ public class Main {
 //-------------- AGGIUNTA VARIABILI -----------------------------------
             GRBVar[][] xij = aggiungiVariabilix(model, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
             GRBVar[] u = aggiungiVariabiliu(model, n_vertici);
-// --------------------------------------------------------------------
 // -------------- FUNZIONE OBIETTIVO -------------------------------------
             aggiungiFunzioneObiettivo(model, cij, xij, n_vertici);    //modulo linearizzato
-//------------------------------------------------------------------------
 //-------------------- VINCOLI -----------------------------------------------------
             aggiungiVincolo1(model, xij, n_vertici);
             aggiungiVincolo2(model, xij, n_vertici);
@@ -175,7 +160,7 @@ public class Main {
             model.optimize();    //ottimizzazio
 //-----------------------------------------------------------------------------------
 
-            //******************************************************************************************************************
+
             System.out.println("\nGRUPPO gruppo_25");
             System.out.println("Componenti: Brognoli e Agosti\n\n");
 //------------------------------- QUESITO 1 ---------------------------------------------------------------------------
