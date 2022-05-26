@@ -94,6 +94,25 @@ public class Main {
         }
     }
 
+    private static void aggiungiVincolo4(GRBModel model,GRBVar[][] xij, int [][] cij, int nVertici,double val_fobj  ){
+        GRBLinExpr funzione_obiettivo_vincolo = new GRBLinExpr();
+        GRBLinExpr expr5 = new GRBLinExpr();
+        expr5.addConstant(val_fobj);
+        for (int i = 0; i < nVertici; i++) {
+            for (int j = 0; j < nVertici; j++) {
+                if (i != j) {
+                    funzione_obiettivo_vincolo.addTerm(cij[i][j], xij[i][j]);
+
+                }
+            }
+        }
+        try {
+            model.addConstr(funzione_obiettivo_vincolo, GRB.EQUAL, expr5, "vincolo funzione obiettivo" );
+        } catch (GRBException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main (String[]args){
         int n_vertici = 40;
         int[][] cij = new int[n_vertici][n_vertici];//il percorso è simmetrico -> cij=cji
@@ -101,9 +120,9 @@ public class Main {
         int verticeV = 2;
         int a=7; //vincolo1: il costo dei lati incidenti al vertice v sia al massimo il a% del costo totale del ciclo
         int [] latob ={6, 25};
-        int[] latoc = {36, 1 };
-        int[] latod = {13, 10};
-        int[] latoe= {13, 10};
+        int latoc=114;
+        int[] latod = {36, 1 };
+        int[] latoe = {13, 10};
         int[] latof = {32, 2};
         int[] latog = {2, 8};
         int[] latoh = {16, 39};
@@ -149,16 +168,17 @@ public class Main {
 //-------------- AGGIUNTA VARIABILI -----------------------------------
             GRBVar[][] xij = aggiungiVariabilix(model, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
             GRBVar[] u = aggiungiVariabiliu(model, n_vertici);
-// -------------- FUNZIONE OBIETTIVO -------------------------------------
-            aggiungiFunzioneObiettivo(model, cij, xij, n_vertici);    //modulo linearizzato
-//-------------------- VINCOLI -----------------------------------------------------
+// -------------- FUNZIONE OBIETTIVO ----------------------------------
+            aggiungiFunzioneObiettivo(model, cij, xij, n_vertici);
+
+
+//-------------------- VINCOLI ----------------------------------------
             aggiungiVincolo1(model, xij, n_vertici);
             aggiungiVincolo2(model, xij, n_vertici);
             aggiungiVincolo3(model, xij, n_vertici, u);
-            //aggiungiVincolo4(model, n_vertici, u);
 
-            model.optimize();    //ottimizzazio
-//-----------------------------------------------------------------------------------
+            model.optimize();   //ottimizzazione
+//----------------------------------------------------------------------
 
 
             System.out.println("\nGRUPPO gruppo_25");
@@ -166,7 +186,7 @@ public class Main {
 //------------------------------- QUESITO 1 ---------------------------------------------------------------------------
             System.out.println("QUESITO I:");
             System.out.println("funzione obiettivo = " + model.get(GRB.DoubleAttr.ObjVal));
-            System.out.print( "ciclo ottimo = [");
+            System.out.print( "ciclo ottimo 1 = [");
 
 
 
