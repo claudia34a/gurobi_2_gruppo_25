@@ -116,11 +116,11 @@ public class Main {
     private static void aggiungiVincoloB(GRBModel model, GRBVar[][] xij, int [][] cij,int c, int nVertici, int [] latob, int l, GRBVar y, double m)throws GRBException{
         GRBLinExpr expr = new GRBLinExpr();
         GRBLinExpr funzione_obiettivo = new GRBLinExpr();
-        int i=latob[0];
-        int j=latob[1];
-        expr.addTerm(c, xij[i][j]);
+        int s=latob[0];
+        int t=latob[1];
+        expr.addTerm(c, xij[s][t]);
         expr.addConstant(m);
-        expr.addTerm(-m, xij[i][j]);
+        expr.addTerm(-m, xij[s][t]);
 
         for (int i = 0; i < nVertici; i++){
             for (int j = 0; j < nVertici; j++){
