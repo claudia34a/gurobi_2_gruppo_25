@@ -29,7 +29,16 @@ public class Main {
 
         return u;
     }
+    //aggiungi variabili z
+    private static GRBVar[] aggiungiVariabiliz(GRBModel model, int nVertici) throws GRBException {
+        GRBVar[] z = new GRBVar[nVertici];
 
+        for (int j = 0; j < 4; j++) {
+            z[j] = model.addVar(0, 1, 0, GRB.BINARY, "x" +  j);
+        }
+
+        return z;
+    }
 
     //aggiunta funzione obiettivo al modello
     private static void aggiungiFunzioneObiettivo(GRBModel model, int [][] cij, GRBVar [][] xij, int nVertici) throws GRBException {
@@ -134,6 +143,37 @@ public class Main {
 
     }
 
+    private static void aggiungiVincoloC(GRBModel model, GRBVar[][] xij, int [][] cij,  int [] latoe, int []latof, int [] latod)throws GRBException{
+        GRBLinExpr expr = new GRBLinExpr();
+        GRBLinExpr expr5 = new GRBLinExpr();
+
+        expr.addTerm(1, xij[latoe[0]][latoe[1]]);
+        expr.addTerm(1, xij[latof[0]][latof[1]]);
+
+
+        expr5.addTerm(2, xij[latod[0]][latod[1]]);
+
+        model.addConstr(expr, GRB.GREATER_EQUAL,expr5, "vincoloC" );
+
+    }
+
+    private static void aggiungiVincoloD(GRBModel model, GRBVar[]z, GRBVar [][]xij, int [] latog, int[] latoh, int[] latoi)throws GRBException{
+        GRBLinExpr expr = new GRBLinExpr();
+        GRBLinExpr expr5 = new GRBLinExpr();
+
+        expr.addTerm(1, xij[latog[0]][latog[1]]);   //xij lato g
+        expr.addTerm(1, xij[latoh[0]][latoh[1]]);   //xij lato h
+        expr.addTerm(1, xij[latoi[0]][latoi[1]]);   //xij lato i
+
+        for (int i = 0; i < 4; i++){
+            expr5.addTerm(i, z[i]);
+        }
+
+        //Xg+Xh+Xi = 0 Z0+  Z1 + 2 Z2 + 3 Z3
+        model.addConstr(expr, GRB.EQUAL,expr5, "vincoloD" );
+
+    }
+
 
     public static void main (String[]args){
         int n_vertici = 40;
@@ -209,6 +249,117 @@ public class Main {
             System.out.println("QUESITO I:");
             System.out.println("funzione obiettivo = " + model.get(GRB.DoubleAttr.ObjVal));
             System.out.print( "ciclo ottimo 1 = [");
+
+            /*for(int i=0; i<n_vertici;i++) {
+                for (int j = 0; j < n_vertici; j++) {
+                    System.out.printf("%.1f \t",xij[i][j].get(GRB.DoubleAttr.X));
+                }
+                System.out.println();
+            }*/
+            int i=0;
+            int j;
+
+            do{
+                for(j=0; j<n_vertici; j++){
+                    if(xij[i][j].get(GRB.DoubleAttr.X)!=0){
+                        System.out.print(i+", ");
+                        break;
+                    }
+                }
+                i=j;
+            }while(j!=0);
+            System.out.print("0]");
+            System.out.println();
+             // visualizzazione matrice
+            // System.out.print("\n"+i);
+
+           /* for(int k=0; k<n_vertici;k++) {
+                for (int l = 0; l < n_vertici; l++) {
+                    System.out.print((xij[k][l].get(GRB.DoubleAttr.X))+"\t");
+                }
+                System.out.println();
+            }
+            */
+
+//---------------------QUESITO II--------------------------------------------------------------------------------------
+            GRBModel model_II = new GRBModel(env);
+
+            GRBVar[][] xij_II = aggiungiVariabilix(model_II, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
+            GRBVar[] u_II = aggiungiVariabiliu(model_II, n_vertici);
+
+            aggiungiFunzioneObiettivo(model_II, cij, xij_II, n_vertici);
+
+            aggiungiVincolo1(model_II, xij_II, n_vertici);
+            aggiungiVincolo2(model_II, xij_II, n_vertici);
+            aggiungiVincolo3(model_II, xij_II, n_vertici, u_II);
+
+            aggiungiVincolo4(model_II, xij_II,cij,n_vertici, objval);
+
+
+            model_II.optimize();    //ottimizzazione
+
+            System.out.print( "ciclo ottimo 2 = [");
+
+          /*   for(int k=0; k<n_vertici;k++) {
+                for (int l = 0; l < n_vertici; l++) {
+                    System.out.print((xij[k][l].get(GRB.DoubleAttr.X))+"\t");
+                }
+                System.out.println();
+            }
+            */
+
+            i=0;
+            do{
+                for(j=0; j<n_vertici; j++){
+                    if(xij_II[i][j].get(GRB.DoubleAttr.X)!=0){
+                        System.out.print(i+", ");
+                        break;
+                    }
+                }
+                i=j;
+            }while(j!=0);
+
+            System.out.print("0]");
+            System.out.println();
+
+
+
+
+//---------------------QUESITO III--------------------------------------------------------------------------------------
+            GRBModel model_III = new GRBModel(env);
+
+            GRBVar[][] xij_III = aggiungiVariabilix(model_III, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
+            GRBVar[] u_III = aggiungiVariabiliu(model_III, n_vertici);
+            GRBVar[] z_III =aggiungiVariabiliz(model_III,n_vertici);
+            GRBVar y= model.addVar( 0, 1, 0, GRB.BINARY, "Y");;
+            aggiungiFunzioneObiettivo(model_III, cij, xij_III, n_vertici, y, l);
+
+            aggiungiVincolo1(model_III, xij_III, n_vertici);
+            aggiungiVincolo2(model_III, xij_III, n_vertici);
+            aggiungiVincolo3(model_III, xij_III, n_vertici, u_III);
+            aggiungiVincoloA(model_III, xij_III, cij, n_vertici, a, verticeV, l, y);
+
+            //----------calcolo costo massimo di un percorso------
+            double M=0;
+            double max;
+            for(i=0; i<n_vertici; i++){
+                max=0;
+                for(j=0; j<n_vertici; j++){
+                    if(cij[i][j]>max){
+                        max=cij[i][j];
+                    }
+                }
+                M+=max;
+            }
+            aggiungiVincoloB(model_III, xij_III, cij,c,  n_vertici,latob,l,  y, M);
+            aggiungiVincoloC(model_III,xij_III, cij, latoe,latof, latod);
+            aggiungiVincoloD(model_III, z_III, xij_III, latog,  latoh, latoi);
+
+            model_III.optimize();   //ottimizzazione
+
+
+
+
 
 
 
