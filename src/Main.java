@@ -143,7 +143,7 @@ public class Main {
 
     }
 
-    private static void aggiungiVincoloC(GRBModel model, GRBVar[][] xij, int [][] cij,  int [] latoe, int []latof, int [] latod)throws GRBException{
+    private static void aggiungiVincoloC(GRBModel model, GRBVar[][] xij,  int [] latoe, int []latof, int [] latod)throws GRBException{
         GRBLinExpr expr = new GRBLinExpr();
         GRBLinExpr expr5 = new GRBLinExpr();
 
@@ -171,6 +171,12 @@ public class Main {
 
         //Xg+Xh+Xi = 0 Z0+  Z1 + 2 Z2 + 3 Z3
         model.addConstr(expr, GRB.EQUAL,expr5, "vincoloD" );
+
+        GRBLinExpr exprz = new GRBLinExpr();
+        for (int i = 0; i < 4; i++){
+            exprz.addTerm(1, z[i]);
+            model.addConstr(exprz, GRB.EQUAL,1, "vincoloD-BIS" );//la sommatoria delle z deve fare 1
+        }
 
     }
 
@@ -331,8 +337,8 @@ public class Main {
             GRBVar[][] xij_III = aggiungiVariabilix(model_III, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
             GRBVar[] u_III = aggiungiVariabiliu(model_III, n_vertici);
             GRBVar[] z_III =aggiungiVariabiliz(model_III,n_vertici);
-            GRBVar y= model.addVar( 0, 1, 0, GRB.BINARY, "Y");;
-            aggiungiFunzioneObiettivo(model_III, cij, xij_III, n_vertici, y, l);
+           // GRBVar y= model.addVar( 0, 1, 0, GRB.BINARY, "Y");
+            aggiungiFunzioneObiettivo(model_III, cij, xij_III, n_vertici, z_III[3], l);
 
             aggiungiVincolo1(model_III, xij_III, n_vertici);
             aggiungiVincolo2(model_III, xij_III, n_vertici);
@@ -355,20 +361,27 @@ public class Main {
             aggiungiVincoloC(model_III,xij_III, cij, latoe,latof, latod);
             aggiungiVincoloD(model_III, z_III, xij_III, latog,  latoh, latoi);
 
-            model_III.optimize();   //ottimizzazione
+            model_III.optimize();   //ottimizzazion
+            System.out.println("funzione obiettivo = " + model_III.get(GRB.DoubleAttr.ObjVal));
+            System.out.print( "ciclo ottimo 3 = [");
 
+            int p=0;
+            int q;
 
-
-
-
-
-
+            do{
+                for(q=0; q<n_vertici; q++){
+                    if(xij[p][q].get(GRB.DoubleAttr.X)!=0){
+                        System.out.print(p+", ");
+                        break;
+                    }
+                }
+                p=q;
+            }while(q!=0);
+            System.out.print("0]");
+            System.out.println();
 
         } catch (GRBException e){
             e.printStackTrace();
         }
-
-
-
     }
 }
