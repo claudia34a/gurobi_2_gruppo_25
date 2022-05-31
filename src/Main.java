@@ -370,7 +370,7 @@ public class Main {
 
             do{
                 for(q=0; q<n_vertici; q++){
-                    if(xij[p][q].get(GRB.DoubleAttr.X)!=0){
+                    if(xij_III[p][q].get(GRB.DoubleAttr.X)!=0){
                         System.out.print(p+", ");
                         break;
                     }
