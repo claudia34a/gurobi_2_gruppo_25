@@ -176,7 +176,7 @@ public class Main {
 
     }
 
-    private static void aggiungiVincoloB(GRBModel model, GRBVar[][] xij, int [][] cij,int c, int nVertici, int [] latob, int l, GRBVar y, double m)throws GRBException{
+    private static void aggiungiVincoloB(GRBModel model, GRBVar[][] xij, int [][] cij,int c, int nVertici, int [] latob, double m)throws GRBException{
         GRBLinExpr expr = new GRBLinExpr();
         GRBLinExpr funzione_obiettivo = new GRBLinExpr();
         int s=latob[0];
@@ -191,7 +191,6 @@ public class Main {
                     funzione_obiettivo.addTerm(cij[i][j], xij[i][j]);
             }
         }
-        funzione_obiettivo.addTerm(l, y);
 
         model.addConstr(funzione_obiettivo, GRB.LESS_EQUAL,expr, "vincoloB" );
 
@@ -316,7 +315,20 @@ public class Main {
 
             aggiungiVincolo4(model_II, xij_II,cij,n_vertici, objval);
 
+            GRBLinExpr expr = new GRBLinExpr();
+            int k=0;
+            int r;
+            do{
+                for(r=0; r<n_vertici; r++){
+                    if(xij[k][r].get(GRB.DoubleAttr.X)!=0){
+                        expr.addTerm(1, xij_II[k][r]);
+                        break;
+                    }
+                }
+                k=r;
+            }while(r!=0);
 
+            model_II.addConstr(expr, GRB.LESS_EQUAL,(n_vertici-1), "vincoloC" );
             model_II.optimize();    //ottimizzazione
 
 //*************************** QUESITO 3 ********************************************************************************
@@ -351,7 +363,7 @@ public class Main {
                 }
                 M+=max;
             }
-            aggiungiVincoloB(model_III, xij_III, cij,c,  n_vertici,latob,l,  z_III[3], M);
+            aggiungiVincoloB(model_III, xij_III, cij,c,  n_vertici,latob, M);
             aggiungiVincoloC(model_III,xij_III, latoe,latof, latod);
             aggiungiVincoloD(model_III, z_III, xij_III, latog,  latoh, latoi);
 
