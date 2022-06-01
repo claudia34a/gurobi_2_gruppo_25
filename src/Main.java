@@ -130,7 +130,7 @@ public class Main {
         }
     }
 
-    private static void aggiungiVincolo4(GRBModel model,GRBVar[][] xij, int [][] cij, int nVertici,double val_fobj  )throws GRBException{
+    private static void aggiungiVincolo4(GRBModel model,GRBVar[][] xij, int [][] cij, int nVertici,double val_fobj )throws GRBException{
         //valore funzione obiettivo = min calcolato modello precedente
         GRBLinExpr funzione_obiettivo_vincolo = new GRBLinExpr();
         GRBLinExpr expr5 = new GRBLinExpr();
@@ -144,9 +144,12 @@ public class Main {
             }
         }
         model.addConstr(funzione_obiettivo_vincolo, GRB.EQUAL, expr5, "vincolo funzione obiettivo" );
+
+
+
     }
 
-    private static void aggiungiVincoloA(GRBModel model, GRBVar[][] xij, int [][] cij, int nVertici, int a, int v, int l, GRBVar y)throws GRBException{
+    private static void aggiungiVincoloA(GRBModel model, GRBVar[][] xij, int [][] cij, int nVertici, int a, int v)throws GRBException{
 
         GRBLinExpr expr = new GRBLinExpr();
         GRBLinExpr funzione_obiettivo = new GRBLinExpr();
@@ -162,7 +165,6 @@ public class Main {
                     funzione_obiettivo.addTerm((double)a*cij[i][j]/100, xij[i][j]);
             }
         }
-        funzione_obiettivo.addTerm((double)a*l/100, y);
 
         model.addConstr(expr, GRB.LESS_EQUAL, funzione_obiettivo, "vincoloA_vj" );
 /*
@@ -328,7 +330,7 @@ public class Main {
             aggiungiVincolo1(model_III, xij_III, n_vertici);
             aggiungiVincolo2(model_III, xij_III, n_vertici);
             aggiungiVincolo3(model_III, xij_III, n_vertici, u_III);
-            aggiungiVincoloA(model_III, xij_III, cij, n_vertici, a, verticeV, l, z_III[3]);
+            aggiungiVincoloA(model_III, xij_III, cij, n_vertici, a, verticeV);
 
             //---------- calcolo M --------
             /*
