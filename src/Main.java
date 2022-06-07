@@ -30,9 +30,7 @@ public class Main {
         return u;
     }
 
-    /**
-     * variabili z utilizzate vincolo [d] terza richiesta
-     */
+    // creazione variabili z utilizzate vincolo [d] terza richiesta
     private static GRBVar[] aggiungiVariabiliz(GRBModel model, int nVertici) throws GRBException {
         GRBVar[] z = new GRBVar[nVertici];
 
@@ -43,10 +41,7 @@ public class Main {
         return z;
     }
 
-    /**
-     * aggiunta funzione obiettivo modello principale
-     */
-
+    // aggiunta funzione obiettivo modello principale
     private static void aggiungiFunzioneObiettivo(GRBModel model, int [][] cij, GRBVar [][] xij, int nVertici) throws GRBException {
         GRBLinExpr funzione_obiettivo = new GRBLinExpr();
 
@@ -60,9 +55,7 @@ public class Main {
         model.set(GRB.IntAttr.ModelSense, GRB.MINIMIZE);
     }
 
-    /**
-     * aggiunta funzione obiettivo al modello terza richiesta
-     */
+    // aggiunta funzione obiettivo modello terza richiesta
     private static void aggiungiFunzioneObiettivo(GRBModel model, int [][] cij, GRBVar [][] xij, int nVertici, GRBVar y, int l) throws GRBException {
         GRBLinExpr funzione_obiettivo = new GRBLinExpr();
         //sommatoria Cij * Xij
@@ -77,10 +70,7 @@ public class Main {
         model.set(GRB.IntAttr.ModelSense, GRB.MINIMIZE);
     }
 
-
-    /**
-     * vincolo 1: sommatoria Xij = 1    j fissato
-     */
+    //vincolo 1: sommatoria Xij = 1    j fissato
     private static void aggiungiVincolo1(GRBModel model, GRBVar[][] xij,int nVertici) throws GRBException {
         for(int j=0; j<nVertici; j++){
             GRBLinExpr expr = new GRBLinExpr();
@@ -94,9 +84,7 @@ public class Main {
 
     }
 
-    /**
-     * vincolo 2: sommatoria Xij = 1    i fissato
-     */
+    // vincolo 2: sommatoria Xij = 1    i fissato
     private static void aggiungiVincolo2(GRBModel model, GRBVar[][] xij,int nVertici) throws GRBException {
         for (int i = 0; i < nVertici; i++){
             GRBLinExpr expr = new GRBLinExpr();
@@ -109,9 +97,8 @@ public class Main {
         }
     }
 
+    //vincolo u: Ui - Uj + (n-1)Xij <= n - 2
     private static void aggiungiVincolo3(GRBModel model, GRBVar[][] xij,int nVertici, GRBVar [] u) throws GRBException {
-        //Ui - Uj + (n-1)Xij <= n - 2
-
         int cost = (nVertici - 2);
         GRBLinExpr expr5 = new GRBLinExpr();
         expr5.addConstant(cost);
@@ -130,8 +117,8 @@ public class Main {
         }
     }
 
+    //seconda richiesta, vincolo: valore funzione obiettivo modelloII = valore otimo del primo modello
     private static void aggiungiVincolo4(GRBModel model,GRBVar[][] xij, int [][] cij, int nVertici,double val_fobj )throws GRBException{
-        //valore funzione obiettivo = min calcolato modello precedente
         GRBLinExpr funzione_obiettivo_vincolo = new GRBLinExpr();
         GRBLinExpr expr5 = new GRBLinExpr();
         expr5.addConstant(val_fobj);
@@ -144,11 +131,9 @@ public class Main {
             }
         }
         model.addConstr(funzione_obiettivo_vincolo, GRB.EQUAL, expr5, "vincolo funzione obiettivo" );
-
-
-
     }
 
+    //terza richiesta, punto a: il costo dei lati incidenti al vertice v sia al massimo il a% del costo totale del ciclo;
     private static void aggiungiVincoloA(GRBModel model, GRBVar[][] xij, int [][] cij, int nVertici, int a, int v)throws GRBException{
 
         GRBLinExpr expr = new GRBLinExpr();
@@ -167,15 +152,9 @@ public class Main {
         }
 
         model.addConstr(expr, GRB.LESS_EQUAL, funzione_obiettivo, "vincoloA_vj" );
-/*
-        GRBLinExpr expr1 = new GRBLinExpr();
-        for (int i=0; i<nVertici; i++){
-            expr1.addTerm(cij[i][v], xij[i][v]);
-        }
-        model.addConstr(expr1, GRB.LESS_EQUAL, funzione_obiettivo, "vincoloA" );*/
-
     }
 
+    //terza richiesta, vincolo b: se il lato (b1, b2) viene percorso, il costo del ciclo ottimo sia inferiore a c;
     private static void aggiungiVincoloB(GRBModel model, GRBVar[][] xij, int [][] cij,int c, int nVertici, int [] latob, double m)throws GRBException{
         GRBLinExpr expr = new GRBLinExpr();
         GRBLinExpr funzione_obiettivo = new GRBLinExpr();
@@ -196,6 +175,7 @@ public class Main {
 
     }
 
+    //terza richiesta vincolo c: il lato (d1, d2) sia percorribile se e solo se sono percorsi anche i lati (e1, e2) e (f1, f2);
     private static void aggiungiVincoloC(GRBModel model, GRBVar[][] xij,  int [] latoe, int []latof, int [] latod)throws GRBException{
         GRBLinExpr expr = new GRBLinExpr();
         GRBLinExpr expr5 = new GRBLinExpr();
@@ -210,6 +190,7 @@ public class Main {
 
     }
 
+    //terza richiesta, vincolo d: nel caso in cui i lati (g1, g2), (h1, h2) e (i1, i2) vengano tutti percorsi, si debba pagare un costo aggiuntivo pari a l
     private static void aggiungiVincoloD(GRBModel model, GRBVar[]z, GRBVar [][]xij, int [] latog, int[] latoh, int[] latoi)throws GRBException{
         GRBLinExpr expr = new GRBLinExpr();
         GRBLinExpr expr5 = new GRBLinExpr();
@@ -218,13 +199,15 @@ public class Main {
         expr.addTerm(1, xij[latoh[0]][latoh[1]]);   //xij lato h
         expr.addTerm(1, xij[latoi[0]][latoi[1]]);   //xij lato i
 
+        // Xg+Xh+Xi = 0 Z0+  Z1 + 2 Z2 + 3 Z3
         for (int i = 0; i < 4; i++){
             expr5.addTerm(i, z[i]);
         }
-        //Xg+Xh+Xi = 0 Z0+  Z1 + 2 Z2 + 3 Z3
+
         model.addConstr(expr, GRB.EQUAL,expr5, "vincoloD" );
 
         GRBLinExpr exprz = new GRBLinExpr();
+        //  Z0+ Z1 + Z2 + Z3 = 1
         for (int i = 0; i < 4; i++){
             exprz.addTerm(1, z[i]);
             model.addConstr(exprz, GRB.EQUAL,1, "vincoloD-BIS" );//la sommatoria delle z deve fare 1
@@ -240,19 +223,18 @@ public class Main {
         int verticeV = 2;
         int a=7; //vincolo1: il costo dei lati incidenti al vertice v sia al massimo il a% del costo totale del ciclo
         int [] latob ={6, 25};
-        int c=114;
+        int c=114; //vincolo b) se il latob viene percorso, il costo del ciclo ottimo sia inferiore a c
         int[] latod = {36, 1 };
         int[] latoe = {13, 10};
         int[] latof = {32, 2};
         int[] latog = {2, 8};
         int[] latoh = {16, 39};
         int[] latoi = {7, 9};
-        int l = 2;
+        int l = 2;      //costo aggiuntivo
 
         String nome_file = "coppia25.txt";
 //----------------------LETTURA DATI DA FILE-------------------
         try {
-            // apre in lettura
             BufferedReader filebuf = new BufferedReader(new FileReader(nome_file));
             boolean iniziaLettura = false;
             String next;
@@ -265,9 +247,6 @@ public class Main {
                     cij[Integer.parseInt(riga[0])][Integer.parseInt(riga[1])] = Integer.parseInt(riga[2]);
                     cij[Integer.parseInt(riga[1])][Integer.parseInt(riga[0])] = Integer.parseInt(riga[2]);
                 } else if (next.contains("Vertici")) {
-                    //riga = (next.split(" "));
-                    //n_vertici= riga[1];
-                    //cij=new int[riga[1]][riga[1]];
                     iniziaLettura = true;
                 }
                 next = filebuf.readLine();
@@ -286,7 +265,7 @@ public class Main {
 
     //-------------- AGGIUNTA VARIABILI -----------------------------------
             GRBVar[][] xij = aggiungiVariabilix(model, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
-            GRBVar[] u = aggiungiVariabiliu(model, n_vertici);
+            GRBVar[] u = aggiungiVariabiliu(model, n_vertici);  //variabili fittizie per ordinare i nodi che vengono visitati;
 
     // -------------- FUNZIONE OBIETTIVO ----------------------------------
             aggiungiFunzioneObiettivo(model, cij, xij, n_vertici);
@@ -304,7 +283,7 @@ public class Main {
 
             GRBModel model_II = new GRBModel(env);
 
-            GRBVar[][] xij_II = aggiungiVariabilix(model_II, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
+            GRBVar[][] xij_II = aggiungiVariabilix(model_II, n_vertici);
             GRBVar[] u_II = aggiungiVariabiliu(model_II, n_vertici);
 
             aggiungiFunzioneObiettivo(model_II, cij, xij_II, n_vertici);
@@ -315,6 +294,8 @@ public class Main {
 
             aggiungiVincolo4(model_II, xij_II,cij,n_vertici, objval);
 
+            //creazione vincolo per trovare una soluzione diversa dalla soluzione trovata nel mod0ello "quesito 1"
+            //almeno una xij diversa => sommatoria delle xij che erano ad 1 <= numero nodi - 1
             GRBLinExpr expr = new GRBLinExpr();
             int k=0;
             int r;
@@ -329,12 +310,12 @@ public class Main {
             }while(r!=0);
 
             model_II.addConstr(expr, GRB.LESS_EQUAL,(n_vertici-1), "vincoloC" );
-            model_II.optimize();    //ottimizzazione
+            model_II.optimize();
 
 //*************************** QUESITO 3 ********************************************************************************
             GRBModel model_III = new GRBModel(env);
 
-            GRBVar[][] xij_III = aggiungiVariabilix(model_III, n_vertici); //variabile binaria  ed è uguale a 1 se l'arco (i,j) appartiene al circuito, altrimenti xij=0
+            GRBVar[][] xij_III = aggiungiVariabilix(model_III, n_vertici);
             GRBVar[] u_III = aggiungiVariabiliu(model_III, n_vertici);
             GRBVar[] z_III =aggiungiVariabiliz(model_III,n_vertici);
             aggiungiFunzioneObiettivo(model_III, cij, xij_III, n_vertici, z_III[3], l);
@@ -354,6 +335,7 @@ public class Main {
              */
             double M=0;
             double max;
+            //sommo il costo massimo di ogni riga della matrice dei costi (costi sulla diagonale = 0)
             for(int i=0; i<n_vertici; i++){
                 max=0;
                 for(int j=0; j<n_vertici; j++){
@@ -367,14 +349,14 @@ public class Main {
             aggiungiVincoloC(model_III,xij_III, latoe,latof, latod);
             aggiungiVincoloD(model_III, z_III, xij_III, latog,  latoh, latoi);
 
-            model_III.optimize();   //ottimizzazion
+            model_III.optimize();
 
 
 
 //************************** OUTPUT ******************************************************************************
             int i=0;
             int j;
-            System.out.println("\nGRUPPO gruppo_25");
+            System.out.println("\n\n\nGRUPPO gruppo_25");
             System.out.println("Componenti: Brognoli e Agosti\n\n");
 
 //------------------------------- QUESITO 1 ---------------------------------------------------------------------------
